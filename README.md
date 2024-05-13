@@ -1,3 +1,29 @@
+# libfwbt
+fixed width binary table library.
+
+## Introduction
+The fbtw format is a simple file format intially created to store a large table of
+corresponding SHA-256 checksums. To make it usable for different things, the
+width of the key column and value column is adjustable per file.
+
+### File Structure
+#### Header
+* 4 bytes / char[4]: Magic/Signature Bytes = FWBT
+* 1 byte / u8: Version = 1
+* 4 bytes / u32: Key Width (Big Endian)
+* 4 bytes / u32: Value Width (Big Endian)
+* 4 bytes / u32: Entry Count (Big Endian)
+
+#### Body
+The following elements are repeated for each entry. The number of entries is
+specified in the header.
+* [Key Width] bytes: Key
+* [Value Width] bytes: Value
+
+### Library Usage Example
+```c
+/* file: src/test.c */
+
 #include "fwbt.h"
 
 #include <stdio.h>
@@ -50,10 +76,10 @@ int main(void) {
 
   err = fwbt_serialize(fwbt, &out, &outsize);
   CHECK_ERR(err);
-#ifdef WRITE_SERIALIZED
+
   fwrite(out, outsize, 1, stdout);
-#endif
   fprintf(stderr, "outsize = %zu\n", outsize);
 
   return err;
 }
+```
