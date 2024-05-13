@@ -6,9 +6,11 @@ sector config
     str obj_dir 'obj/'
 
     str binname 'fwbt_test'
+    str libname 'libfwbt.so'
 
     str src 'src/'
-    list str sources 'fwbt', 'test'
+    list str sources 'fwbt'
+    list str test_sources 'fwbt', 'test'
   end
 
   section mariebuild
@@ -34,7 +36,7 @@ sector targets
     str target_builddir '$(/config/files/debug_dir)'
     str target_objdir '$(/config/files/debug_dir)$(/config/files/obj_dir)'
 
-    list str c_rules 'compile', 'link'
+    list str c_rules 'compile_test', 'link_test'
   end
 
   section release
@@ -44,9 +46,7 @@ sector targets
     
     list str required_targets 'clean'
 
-    list str c_rules 'compile', 'link'
-
-    str exec 'strip --strip-all $(/config/files/release_dir)$(/config/files/binname)'
+    list str c_rules 'compile', 'shared_object'
   end
 end
 
@@ -64,11 +64,38 @@ sector c_rules
               $(/config/mariebuild/cc) $(/config/mariebuild/cflags) $(%target_cflags%) -c $(%input%) -o $(%output%)'
   end
 
-  section link
+  section shared_object
     str build_type 'full'
     str exec_mode 'unify'
 
     str input_src '/config/files/sources'
+
+    str input_format '$(%target_objdir%)$(%element%).o'
+    str output_format '$(%target_builddir%)$(/config/files/libname)'
+
+    str ldflags '-shared'
+
+    str exec '$(/config/mariebuild/cc) -o $(%output%) $(%input%) $(ldflags)'
+  end
+
+  section compile_test
+    str exec_mode 'singular'
+
+    str input_src '/config/files/test_sources'
+
+    str input_format '$(/config/files/src)$(%element%).c'
+    str output_format '$(%target_objdir%)$(%element%).o'
+
+    str exec '#!/bin/bash
+              mkdir -p \$(dirname $(%output%))
+              $(/config/mariebuild/cc) $(/config/mariebuild/cflags) $(%target_cflags%) -c $(%input%) -o $(%output%)'
+  end
+
+  section link_test
+    str build_type 'full'
+    str exec_mode 'unify'
+
+    str input_src '/config/files/test_sources'
 
     str input_format '$(%target_objdir%)$(%element%).o'
     str output_format '$(%target_builddir%)$(/config/files/binname)'
