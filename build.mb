@@ -12,7 +12,7 @@ sector config
   end
 
   section mariebuild
-    str cc 'clang-14'
+    str cc 'clang'
     str cflags '-Wall -Wextra -Iinclude/'
 
     list str targets 'clean', 'debug', 'release'
