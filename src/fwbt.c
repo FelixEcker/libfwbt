@@ -195,7 +195,8 @@ fwbt_error_t fwbt_remove_value_by_index(fwbt_t *fwbt, uint32_t index) {
     return FWBT_OUT_OF_RANGE;
   }
 
-  for (size_t ix = index; ix < (fwbt->header.entry_count - 1); ix++) {
+  fwbt->header.entry_count--;
+  for (size_t ix = index; ix < fwbt->header.entry_count; ix++) {
     fwbt->body.keys[ix] = fwbt->body.keys[ix + 1];
     fwbt->body.values[ix] = fwbt->body.values[ix + 1];
   }
