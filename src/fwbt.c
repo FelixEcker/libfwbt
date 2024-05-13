@@ -88,6 +88,9 @@ fwbt_error_t fwbt_parse_bytes(const uint8_t *data, size_t data_size,
   if (out_fwbt->header.value_width == 0) {
     return FWBT_INVALID_VALUE_WIDTH;
   }
+  if (out_fwbt->header.entry_count == UINT32_MAX) {
+    return FWBT_INVALID_ENTRY_COUNT;
+  }
 
   return _parse_body(data + FWBT_HEADER_SIZE, data_size - FWBT_HEADER_SIZE,
                      out_fwbt);
@@ -160,6 +163,10 @@ fwbt_error_t fwbt_set_value(fwbt_t *fwbt, uint8_t *key, uint8_t *value,
     fwbt->body.keys[previous] = key;
     fwbt->body.values[previous] = value;
     return FWBT_OK;
+  }
+
+  if (fwbt->header.entry_count + 1 == UINT32_MAX) {
+    return FWBT_TABLE_FULL;
   }
 
   previous = fwbt->header.entry_count;
