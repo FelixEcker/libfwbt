@@ -100,7 +100,7 @@ fwbt_error_t fwbt_serialize(fwbt_t fwbt, uint8_t **out_bytes,
   }
 
   *out_size = FWBT_HEADER_SIZE;
-  *out_size += fwbt.header.element_count *
+  *out_size += fwbt.header.entry_count *
                (fwbt.header.key_width + fwbt.header.value_width);
 
   *out_bytes = malloc(*out_size);
@@ -108,15 +108,26 @@ fwbt_error_t fwbt_serialize(fwbt_t fwbt, uint8_t **out_bytes,
     return FWBT_MALLOC_FAIL;
   }
 
+  /* save these in case of byte reversage */
+  uint32_t entry_count = fwbt.header.entry_count;
+  uint32_t key_width = fwbt.header.key_width;
+  uint32_t value_width = fwbt.header.value_width;
+
+#if defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN
+  /* reverse values for little endian systems */
+  fwbt.header.key_width = _reverse_bytes(fwbt.header.key_width);
+  fwbt.header.value_width = _reverse_bytes(fwbt.header.value_width);
+  fwbt.header.entry_count = _reverse_bytes(fwbt.header.entry_count);
+#endif
+
   memcpy(*out_bytes, &fwbt.header, FWBT_HEADER_SIZE);
   size_t cpy_offs = FWBT_HEADER_SIZE;
 
-  for (size_t ix = 0; ix < fwbt.header.element_count; ix++) {
-    memcpy(*out_bytes + cpy_offs, fwbt.body.keys[ix], fwbt.header.key_width);
-    cpy_offs += fwbt.header.key_width;
-    memcpy(*out_bytes + cpy_offs, fwbt.body.values[ix],
-           fwbt.header.value_width);
-    cpy_offs += fwbt.header.value_width;
+  for (size_t ix = 0; ix < entry_count; ix++) {
+    memcpy(*out_bytes + cpy_offs, fwbt.body.keys[ix], key_width);
+    cpy_offs += key_width;
+    memcpy(*out_bytes + cpy_offs, fwbt.body.values[ix], value_width);
+    cpy_offs += value_width;
   }
 
   return FWBT_OK;
