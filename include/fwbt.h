@@ -5,9 +5,9 @@
  * -> Header (17 bytes total)
  *   4 bytes : Magic/Signature Bytes = FWBT
  *   1 byte  : Version = 1
- *   4 bytes : Key Width
- *   4 bytes : Value Width
- *   4 bytes : Entry Count
+ *   4 bytes : Key Width (Big Endian)
+ *   4 bytes : Value Width (Big Endian)
+ *   4 bytes : Entry Count (Big Endian)
  * -> Body ( (Key Width + Value Width * Entry Count) bytes total )
  *   {
  *     [Key Width] bytes   : Key
