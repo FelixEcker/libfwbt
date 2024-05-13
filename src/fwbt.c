@@ -12,6 +12,10 @@
 #include <string.h>
 
 #if defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN
+#define __USE_LE
+#endif
+
+#ifdef __USE_LE
 uint32_t _reverse_bytes(uint32_t bytes) {
   uint32_t aux = 0;
   uint8_t byte;
@@ -82,7 +86,7 @@ fwbt_error_t fwbt_parse_bytes(const uint8_t *data, size_t data_size,
 
   memcpy(out_fwbt, data, FWBT_HEADER_SIZE);
 
-#if defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN
+#ifdef __USE_LE
   /* reverse values for little endian systems */
   out_fwbt->header.key_width = _reverse_bytes(out_fwbt->header.key_width);
   out_fwbt->header.value_width = _reverse_bytes(out_fwbt->header.value_width);
@@ -123,7 +127,7 @@ fwbt_error_t fwbt_serialize(fwbt_t fwbt, uint8_t **out_bytes,
   uint32_t key_width = fwbt.header.key_width;
   uint32_t value_width = fwbt.header.value_width;
 
-#if defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN
+#ifdef __USE_LE
   /* reverse values for little endian systems */
   fwbt.header.key_width = _reverse_bytes(fwbt.header.key_width);
   fwbt.header.value_width = _reverse_bytes(fwbt.header.value_width);
