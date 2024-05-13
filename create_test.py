@@ -47,7 +47,10 @@ def main():
 
   assert expected_length == actual_length
 
-  sys.stdout.buffer.write(data)
+  print("unsigned char test_fwbt[] = {", end="")
+  for b in data:
+    print(hex(b) + ",", end ="")
+  print("}; unsigned int test_fwbt_len = "+str(actual_length)+";")
 
 if __name__ == "__main__":
   main()
