@@ -24,6 +24,15 @@ fwbt_error_t _parse_body(const uint8_t *data, size_t data_size,
     return FWBT_NULLPTR;
   }
 
+#ifndef FWBT_IGNORE_BODY_SIZE
+  const size_t calculated_size =
+      (out_fwbt->header.key_width + out_fwbt->header.value_width) *
+      out_fwbt->header.entry_count;
+  if (data_size != calculated_size) {
+    return FWBT_INVALID_BODY_SIZE;
+  }
+#endif
+
   out_fwbt->body.keys =
       malloc(sizeof(*out_fwbt->body.keys) * out_fwbt->header.entry_count);
   out_fwbt->body.values =
@@ -72,6 +81,13 @@ fwbt_error_t fwbt_parse_bytes(const uint8_t *data, size_t data_size,
   out_fwbt->header.value_width = _reverse_bytes(out_fwbt->header.value_width);
   out_fwbt->header.entry_count = _reverse_bytes(out_fwbt->header.entry_count);
 #endif
+
+  if (out_fwbt->header.key_width == 0) {
+    return FWBT_INVALID_KEY_WIDTH;
+  }
+  if (out_fwbt->header.value_width == 0) {
+    return FWBT_INVALID_VALUE_WIDTH;
+  }
 
   return _parse_body(data + FWBT_HEADER_SIZE, data_size - FWBT_HEADER_SIZE,
                      out_fwbt);

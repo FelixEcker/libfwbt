@@ -4,7 +4,6 @@
 
 #include "../test.fwbt.h"
 
-
 int main(void) {
   fwbt_t fwbt;
   fwbt_error_t err = fwbt_parse_bytes(test_fwbt, test_fwbt_len, &fwbt);
