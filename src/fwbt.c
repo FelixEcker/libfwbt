@@ -164,8 +164,10 @@ fwbt_error_t fwbt_set_value(fwbt_t *fwbt, uint8_t *key, uint8_t *value,
 
   previous = fwbt->header.entry_count;
   fwbt->header.entry_count++;
-  fwbt->body.keys = realloc(fwbt->body.keys, sizeof(*fwbt->body.keys) * fwbt->header.entry_count);
-  fwbt->body.values = realloc(fwbt->body.values, sizeof(*fwbt->body.values) * fwbt->header.entry_count);
+  fwbt->body.keys = realloc(fwbt->body.keys, sizeof(*fwbt->body.keys) *
+                                                 fwbt->header.entry_count);
+  fwbt->body.values = realloc(fwbt->body.values, sizeof(*fwbt->body.values) *
+                                                     fwbt->header.entry_count);
 
   fwbt->body.keys[previous] = key;
   fwbt->body.values[previous] = value;
