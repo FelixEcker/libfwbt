@@ -14,10 +14,10 @@ int main(void) {
 
   fprintf(stderr, "Header Info:\n");
   fprintf(stderr, "\tSignature: %.*s ; Version: %u\n", 4, fwbt.header.signature,
-         fwbt.header.version);
+          fwbt.header.version);
   fprintf(stderr, "\tKey Width: %u ; Value Width: %u ; Entry Count: %u\n",
-         fwbt.header.key_width, fwbt.header.value_width,
-         fwbt.header.entry_count);
+          fwbt.header.key_width, fwbt.header.value_width,
+          fwbt.header.entry_count);
 
   size_t outsize = 0;
   uint8_t *out;
@@ -29,7 +29,7 @@ int main(void) {
 
   fprintf(stderr, "outsize = %zu\n", outsize);
 #ifdef WRITE_SERIALIZED
-  fwrite(out, outsize, 1, stdout); 
+  fwrite(out, outsize, 1, stdout);
 #endif
 
 exit:
