@@ -132,3 +132,17 @@ fwbt_error_t fwbt_serialize(fwbt_t fwbt, uint8_t **out_bytes,
 
   return FWBT_OK;
 }
+
+uint32_t fwbt_find_value(fwbt_t fwbt, uint8_t *key) {
+  if (key == NULL) {
+    return UINT32_MAX;
+  }
+
+  for (size_t ix = 0; ix < fwbt.header.entry_count; ix++) {
+    if (memcmp(fwbt.body.keys[ix], key, fwbt.header.key_width) == 0) {
+      return ix;
+    }
+  }
+
+  return UINT32_MAX;
+}
