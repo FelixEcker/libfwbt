@@ -109,7 +109,7 @@ uint32_t fwbt_find_value(fwbt_t fwbt, uint8_t *key);
  * replaced?
  * @return FWBT_OK on success
  */
-fwbt_error_t fwbt_set_value(fwbt_t fwbt, uint8_t *key, uint8_t *value,
+fwbt_error_t fwbt_set_value(fwbt_t *fwbt, uint8_t *key, uint8_t *value,
                             bool replace_existing);
 
 /**
@@ -118,7 +118,7 @@ fwbt_error_t fwbt_set_value(fwbt_t fwbt, uint8_t *key, uint8_t *value,
  * @param key The key of the value to remove
  * @return FWBT_OK on success
  */
-fwbt_error_t fwbt_remove_value(fwbt_t fwbt, uint8_t *key);
+fwbt_error_t fwbt_remove_value(fwbt_t *fwbt, uint8_t *key);
 
 /**
  * @brief Remove a value within the given FWBT
@@ -126,6 +126,6 @@ fwbt_error_t fwbt_remove_value(fwbt_t fwbt, uint8_t *key);
  * @param index The index of the value to remove
  * @return FWBT_OK on success
  */
-fwbt_error_t fwbt_remove_value_by_index(fwbt_t fwbt, uint32_t index);
+fwbt_error_t fwbt_remove_value_by_index(fwbt_t *fwbt, uint32_t index);
 
 #endif
