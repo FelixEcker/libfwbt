@@ -67,6 +67,9 @@ typedef enum fwbt_error {
   FWBT_TOO_SHORT,
   FWBT_NULLPTR,
   FWBT_MALLOC_FAIL,
+  FWBT_DUPLICATE_KEYS,
+  FWBT_KEY_NOT_FOUND,
+  FWBT_OUT_OF_RANGE,
 } fwbt_error_t;
 
 /**
@@ -97,7 +100,8 @@ fwbt_error_t fwbt_serialize(fwbt_t fwbt, uint8_t **out_bytes, size_t *out_size);
 uint32_t fwbt_find_value(fwbt_t fwbt, uint8_t *key);
 
 /**
- * @brief Set a value within the given FWBT
+ * @brief Set a value within the given FWBT. If successful, the pointers to the
+ * key and value are to be viewed as being owned by the table now.
  * @param fwbt The FWBT to modify
  * @param key The key of the new value
  * @param value The value
