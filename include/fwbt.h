@@ -1,6 +1,11 @@
 /* FWBT -- Fixed Width Binary Table
  * Format Version 1 , API Version 1.0
  *
+ * Copyright (c) 2024, Marie Eckert
+ * Licensed under the BSD 3-Clause license.
+ */
+
+/*
  * File Structure
  * -> Header (17 bytes total)
  *   4 bytes : Magic/Signature Bytes = FWBT
@@ -21,6 +26,10 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+
+#ifdef __cpluplus
+extern "C" {
+#endif
 
 #define FWBT_SIGNATURE                                                         \
   { 'F', 'W', 'B', 'T' }
@@ -59,18 +68,46 @@ typedef struct fwbt {
 
 typedef enum fwbt_error {
   FWBT_OK,
+
+  /** @brief signature is missing or malformed */
   FWBT_NO_SIGNATURE,
+
+  /** @brief data version does not equal FWBT_VERSION */
   FWBT_UNSUPPORTED_VERSION,
+
+  /** @brief key width is 0 */
   FWBT_INVALID_KEY_WIDTH,
+
+  /** @brief value width is 0 */
   FWBT_INVALID_VALUE_WIDTH,
+
+  /** @brief entry count equals UINT32_MAX */
   FWBT_INVALID_ENTRY_COUNT,
+
+  /** @brief the actual size of the body does not equal
+   *         entry_count * (key_width + value_width)
+   */
   FWBT_INVALID_BODY_SIZE,
+
+  /** @brief data size is shorter than FWBT_HEADER_SIZE */
   FWBT_TOO_SHORT,
+
+  /** @brief a function received NULL where a valid pointer was expected */
   FWBT_NULLPTR,
+
+  /** @brief an internal memory allocation failed */
   FWBT_MALLOC_FAIL,
+
+  /** @brief a value with the same key already exists */
   FWBT_DUPLICATE_KEYS,
+
+  /** @brief no value with the given key could be found */
   FWBT_KEY_NOT_FOUND,
+
+  /** @brief the given index is greater than or equal to the entry_count */
   FWBT_OUT_OF_RANGE,
+
+  /** @brief the entry_count has reached UINT32_MAX - 1 */
   FWBT_TABLE_FULL
 } fwbt_error_t;
 
@@ -130,4 +167,7 @@ fwbt_error_t fwbt_remove_value(fwbt_t *fwbt, uint8_t *key);
  */
 fwbt_error_t fwbt_remove_value_by_index(fwbt_t *fwbt, uint32_t index);
 
+#ifdef __cpluplus
+}
+#endif
 #endif

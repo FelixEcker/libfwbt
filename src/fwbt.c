@@ -1,3 +1,10 @@
+/* FWBT -- Fixed Width Binary Table
+ * Format Version 1 , API Version 1.0
+ *
+ * Copyright (c) 2024, Marie Eckert
+ * Licensed under the BSD 3-Clause license.
+ */
+
 #include "fwbt.h"
 
 #include <endian.h>
