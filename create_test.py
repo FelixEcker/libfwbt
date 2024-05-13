@@ -52,5 +52,9 @@ def main():
     print(hex(b) + ",", end ="")
   print("}; unsigned int test_fwbt_len = "+str(actual_length)+";")
 
+  with open("test.fwbt", "wb") as file:
+      file.write(data)
+      file.close()
+
 if __name__ == "__main__":
   main()
