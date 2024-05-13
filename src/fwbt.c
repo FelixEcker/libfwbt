@@ -92,3 +92,32 @@ fwbt_error_t fwbt_parse_bytes(const uint8_t *data, size_t data_size,
   return _parse_body(data + FWBT_HEADER_SIZE, data_size - FWBT_HEADER_SIZE,
                      out_fwbt);
 }
+
+fwbt_error_t fwbt_serialize(fwbt_t fwbt, uint8_t **out_bytes,
+                            size_t *out_size) {
+  if (out_bytes == NULL || out_size == NULL) {
+    return FWBT_NULLPTR;
+  }
+
+  *out_size = FWBT_HEADER_SIZE;
+  *out_size += fwbt.header.element_count *
+               (fwbt.header.key_width + fwbt.header.value_width);
+
+  *out_bytes = malloc(*out_size);
+  if (*out_bytes == NULL) {
+    return FWBT_MALLOC_FAIL;
+  }
+
+  memcpy(*out_bytes, &fwbt.header, FWBT_HEADER_SIZE);
+  size_t cpy_offs = FWBT_HEADER_SIZE;
+
+  for (size_t ix = 0; ix < fwbt.header.element_count; ix++) {
+    memcpy(*out_bytes + cpy_offs, fwbt.body.keys[ix], fwbt.header.key_width);
+    cpy_offs += fwbt.header.key_width;
+    memcpy(*out_bytes + cpy_offs, fwbt.body.values[ix],
+           fwbt.header.value_width);
+    cpy_offs += fwbt.header.value_width;
+  }
+
+  return FWBT_OK;
+}

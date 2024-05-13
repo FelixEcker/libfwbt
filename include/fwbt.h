@@ -66,6 +66,7 @@ typedef enum fwbt_error {
   FWBT_INVALID_BODY_SIZE,
   FWBT_TOO_SHORT,
   FWBT_NULLPTR,
+  FWBT_MALLOC_FAIL,
 } fwbt_error_t;
 
 /**
@@ -85,8 +86,7 @@ fwbt_error_t fwbt_parse_bytes(const uint8_t *data, size_t data_size,
  * @param out_size The size of the serialized FWBT in bytes
  * @return FWBT_OK if serialization succeeds.
  */
-fwbt_error_t fwbt_serialize(fwbt_t fwbt, uint8_t **out_bytes,
-                            size_t **out_size);
+fwbt_error_t fwbt_serialize(fwbt_t fwbt, uint8_t **out_bytes, size_t *out_size);
 
 /**
  * @brief Finds the index of a value in a FWBT

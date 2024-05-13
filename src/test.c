@@ -14,7 +14,5 @@ int main(void) {
   printf("\tKey Width: %u ; Value Width: %u ; Entry Count: %u\n",
          fwbt.header.key_width, fwbt.header.value_width,
          fwbt.header.entry_count);
-
-  getc(stdin);
   return err;
 }
