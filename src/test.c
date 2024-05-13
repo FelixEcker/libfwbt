@@ -1,8 +1,11 @@
 #include "fwbt.h"
 
 #include <stdio.h>
+#include <string.h>
 
 #include "../test.fwbt.h"
+
+#define WRITE_SERIALIZED
 
 int main(void) {
   fwbt_t fwbt;
@@ -22,6 +25,7 @@ int main(void) {
   size_t outsize = 0;
   uint8_t *out;
 
+  fwbt_set_value(&fwbt, strdup("test"), strdup("abcdefghi"), false);
   err = fwbt_serialize(fwbt, &out, &outsize);
   if (err != FWBT_OK) {
     goto exit;
