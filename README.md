@@ -2,7 +2,7 @@
 fixed width binary table library.
 
 ## Introduction
-The fbtw format is a simple file format intially created to store a large table of
+The fwbt format is a simple file format intially created to store a large table of
 corresponding SHA-256 checksums. To make it usable for different things, the
 width of the key column and value column is adjustable per file.
 
