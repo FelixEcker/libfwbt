@@ -15,6 +15,27 @@
 #define __USE_LE
 #endif
 
+/* NOTE: These two macros should be used in every case where a failed
+ * (re)allocation should return a FWBT_MALLOC_FAIL error
+ */
+#define xmalloc(s)                                                             \
+  ({                                                                           \
+    void *ret = malloc(s);                                                     \
+    if (ret == NULL) {                                                         \
+      return FWBT_MALLOC_FAIL;                                                 \
+    };                                                                         \
+    ret;                                                                       \
+  })
+
+#define xrealloc(o, s)                                                         \
+  ({                                                                           \
+    void *ret = realloc(o, s);                                                 \
+    if (ret == NULL) {                                                         \
+      return FWBT_MALLOC_FAIL;                                                 \
+    }                                                                          \
+    ret;                                                                       \
+  })
+
 #ifdef __USE_LE
 uint32_t _reverse_bytes(uint32_t bytes) {
   uint32_t aux = 0;
@@ -45,15 +66,15 @@ fwbt_error_t _parse_body(const uint8_t *data, size_t data_size,
 #endif
 
   out_fwbt->body.keys =
-      malloc(sizeof(*out_fwbt->body.keys) * out_fwbt->header.entry_count);
+      xmalloc(sizeof(*out_fwbt->body.keys) * out_fwbt->header.entry_count);
   out_fwbt->body.values =
-      malloc(sizeof(*out_fwbt->body.values) * out_fwbt->header.entry_count);
+      xmalloc(sizeof(*out_fwbt->body.values) * out_fwbt->header.entry_count);
 
   const size_t inc = out_fwbt->header.key_width + out_fwbt->header.value_width;
   size_t wix = 0;
   for (size_t rix = 0; rix < data_size; rix += inc) {
-    out_fwbt->body.keys[wix] = malloc(out_fwbt->header.key_width);
-    out_fwbt->body.values[wix] = malloc(out_fwbt->header.value_width);
+    out_fwbt->body.keys[wix] = xmalloc(out_fwbt->header.key_width);
+    out_fwbt->body.values[wix] = xmalloc(out_fwbt->header.value_width);
 
     memcpy(out_fwbt->body.keys[wix], data + rix, out_fwbt->header.key_width);
     memcpy(out_fwbt->body.values[wix], data + rix + out_fwbt->header.key_width,
@@ -117,10 +138,7 @@ fwbt_error_t fwbt_serialize(fwbt_t fwbt, uint8_t **out_bytes,
   *out_size += fwbt.header.entry_count *
                (fwbt.header.key_width + fwbt.header.value_width);
 
-  *out_bytes = malloc(*out_size);
-  if (*out_bytes == NULL) {
-    return FWBT_MALLOC_FAIL;
-  }
+  *out_bytes = xmalloc(*out_size);
 
   /* save these in case of byte reversage */
   uint32_t entry_count = fwbt.header.entry_count;
@@ -182,10 +200,10 @@ fwbt_error_t fwbt_set_value(fwbt_t *fwbt, uint8_t *key, uint8_t *value,
 
   previous = fwbt->header.entry_count;
   fwbt->header.entry_count++;
-  fwbt->body.keys = realloc(fwbt->body.keys, sizeof(*fwbt->body.keys) *
-                                                 fwbt->header.entry_count);
-  fwbt->body.values = realloc(fwbt->body.values, sizeof(*fwbt->body.values) *
-                                                     fwbt->header.entry_count);
+  fwbt->body.keys = xrealloc(fwbt->body.keys, sizeof(*fwbt->body.keys) *
+                                                  fwbt->header.entry_count);
+  fwbt->body.values = xrealloc(fwbt->body.values, sizeof(*fwbt->body.values) *
+                                                      fwbt->header.entry_count);
 
   fwbt->body.keys[previous] = key;
   fwbt->body.values[previous] = value;
