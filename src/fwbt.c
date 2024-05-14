@@ -56,10 +56,12 @@ fwbt_error_t _parse_body(const uint8_t *data, size_t data_size,
     return FWBT_NULLPTR;
   }
 
+  const uint32_t key_width = out_fwbt->header.key_width;
+  const uint32_t value_width = out_fwbt->header.value_width;
+
 #ifndef FWBT_IGNORE_BODY_SIZE
   const size_t calculated_size =
-      (out_fwbt->header.key_width + out_fwbt->header.value_width) *
-      out_fwbt->header.entry_count;
+      (key_width + value_width) * out_fwbt->header.entry_count;
   if (data_size != calculated_size) {
     return FWBT_INVALID_BODY_SIZE;
   }
@@ -70,15 +72,18 @@ fwbt_error_t _parse_body(const uint8_t *data, size_t data_size,
   out_fwbt->body.values =
       xmalloc(sizeof(*out_fwbt->body.values) * out_fwbt->header.entry_count);
 
-  const size_t inc = out_fwbt->header.key_width + out_fwbt->header.value_width;
+  const size_t inc = key_width + value_width;
   size_t wix = 0;
   for (size_t rix = 0; rix < data_size; rix += inc) {
-    out_fwbt->body.keys[wix] = xmalloc(out_fwbt->header.key_width);
-    out_fwbt->body.values[wix] = xmalloc(out_fwbt->header.value_width);
-
-    memcpy(out_fwbt->body.keys[wix], data + rix, out_fwbt->header.key_width);
-    memcpy(out_fwbt->body.values[wix], data + rix + out_fwbt->header.key_width,
-           out_fwbt->header.value_width);
+#ifndef FWBT_BODY_NO_MEMCPY
+    out_fwbt->body.keys[wix] = xmalloc(key_width);
+    out_fwbt->body.values[wix] = xmalloc(value_width);
+    memcpy(out_fwbt->body.keys[wix], data + rix, key_width);
+    memcpy(out_fwbt->body.values[wix], data + rix + key_width, value_width);
+#else
+    out_fwbt->body.keys[wix] = data + rix;
+    out_fwbt->body.values[wix] = data + key_width;
+#endif
 
     wix++;
   }

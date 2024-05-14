@@ -12,10 +12,10 @@
 #define STR(x) _STR(x)
 
 /* Used to check for errors and log encountered ones. Exits with error code */
-#define CHECK_ERR(x) \
-  if (x != FWBT_OK) { \
-    fprintf(stderr, STR(__LINE__) ": error %d\n", x); \
-    exit(x); \
+#define CHECK_ERR(x)                                                           \
+  if (x != FWBT_OK) {                                                          \
+    fprintf(stderr, STR(__LINE__) ": error %d\n", x);                          \
+    exit(x);                                                                   \
   }
 
 #define u8dup(u) (uint8_t *)strdup(u)

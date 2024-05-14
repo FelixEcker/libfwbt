@@ -112,7 +112,12 @@ typedef enum fwbt_error {
 } fwbt_error_t;
 
 /**
- * @brief Parse the given data into a FWBT
+ * @brief Parse the given data into a FWBT.
+ * @note To avoid memcpying every single key/value pair of the body, define
+ * FWBT_BODY_NO_MEMCPY whilst compiling. This will cause the parsing code
+ * to just point into the raw data received by the function.
+ * When defined MAKE SURE NOT TO FREE THE ORIGINAL DATA
+ *
  * @param data Pointer to the data
  * @param data_size Size of the data
  * @param out_fwbt Destination pointer for the parsed FWBT
