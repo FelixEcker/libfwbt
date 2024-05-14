@@ -52,7 +52,7 @@ uint32_t _reverse_bytes(uint32_t bytes) {
 
 fwbt_error_t _parse_body(const uint8_t *data, size_t data_size,
                          fwbt_t *out_fwbt) {
-  if (out_fwbt == NULL) {
+  if (data == NULL || out_fwbt == NULL) {
     return FWBT_NULLPTR;
   }
 
@@ -93,7 +93,7 @@ fwbt_error_t _parse_body(const uint8_t *data, size_t data_size,
 
 fwbt_error_t fwbt_parse_bytes(const uint8_t *data, size_t data_size,
                               fwbt_t *out_fwbt) {
-  if (out_fwbt == NULL) {
+  if (data == NULL || out_fwbt == NULL) {
     return FWBT_NULLPTR;
   }
 
@@ -186,6 +186,10 @@ uint32_t fwbt_find_value(fwbt_t fwbt, uint8_t *key) {
 
 fwbt_error_t fwbt_set_value(fwbt_t *fwbt, uint8_t *key, uint8_t *value,
                             bool replace_existing) {
+  if (fwbt == NULL) {
+    return FWBT_NULLPTR;
+  }
+
   uint32_t previous = fwbt_find_value(*fwbt, key);
   if (previous != UINT32_MAX) {
     if (!replace_existing) {
@@ -216,6 +220,10 @@ fwbt_error_t fwbt_set_value(fwbt_t *fwbt, uint8_t *key, uint8_t *value,
 }
 
 fwbt_error_t fwbt_remove_value(fwbt_t *fwbt, uint8_t *key) {
+  if (fwbt == NULL) {
+    return FWBT_NULLPTR;
+  }
+
   uint32_t ix = fwbt_find_value(*fwbt, key);
   if (ix == UINT32_MAX) {
     return FWBT_KEY_NOT_FOUND;
@@ -225,6 +233,10 @@ fwbt_error_t fwbt_remove_value(fwbt_t *fwbt, uint8_t *key) {
 }
 
 fwbt_error_t fwbt_remove_value_by_index(fwbt_t *fwbt, uint32_t index) {
+  if (fwbt == NULL) {
+    return FWBT_NULLPTR;
+  }
+
   if (index > fwbt->header.entry_count) {
     return FWBT_OUT_OF_RANGE;
   }
