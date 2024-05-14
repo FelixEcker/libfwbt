@@ -7,4 +7,4 @@ Name: libfwbt
 Description: fixed-width-binary-table parser and serialization library
 Version: 1.0
 Cflags: -I${includedir}
-Libs: -L${libdir} -lfoo
+Libs: -L${libdir} -lfwbt
