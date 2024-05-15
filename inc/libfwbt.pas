@@ -22,13 +22,31 @@ unit libfwbt;
 
 interface
 
-uses baseunix, ctypes;
+{$linklib fwbt}
+
+uses baseunix, ctypes, Types;
 
 const
   sharedobject = 'fwbt';
+  fpc_fwbt_version = '0.1';
+
+  { --- from fwbt.h --- }
+  FWBT_SIGNATURE: array[0..3] of CChar = (
+                                      CChar('F'), 
+                                      CChar('W'), 
+                                      CChar('B'), 
+                                      CChar('T')
+                                  );
+  FWBT_VERSION = 1; { Format Version }
+  FWBT_API_VERSION = '1.0'; { API Version }
+
+  FWBT_DATA_VERSION_INDEX     = 4;
+  FWBT_DATA_KEY_WIDTH_INDEX   = FWBT_DATA_VERSION_INDEX     + 1;
+  FWBT_DATA_VALUE_WIDTH_INDEX = FWBT_DATA_KEY_WIDTH_INDEX   + 4;
+  FWBT_DATA_ENTRY_COUNT_INDEX = FWBT_DATA_VALUE_WIDTH_INDEX + 4;
+  FWBT_DATA_BODY_START        = FWBT_DATA_ENTRY_COUNT_INDEX + 1;
 
 type
-  {$linklib fwbt}
 
   PUInt8 = ^UInt8;
   PPUInt8 = ^PUInt8;
@@ -64,6 +82,8 @@ type
     FWBT_TOO_SHORT,FWBT_NULLPTR,FWBT_MALLOC_FAIL,
     FWBT_DUPLICATE_KEYS,FWBT_KEY_NOT_FOUND,
     FWBT_OUT_OF_RANGE,FWBT_TABLE_FULL);
+
+{ --- functions linked in from libfwbt --- }
 
 {
   @brief Parse the given data into a FWBT.
@@ -124,5 +144,49 @@ function __extern_fwbt_remove_value(fwbt:PFWBT; key:PUInt8):TFWBTError;cdecl;ext
 }
 function __extern_fwbt_remove_value_by_index(fwbt:PFWBT; index:UInt32):TFWBTError;cdecl;external sharedobject name 'fwbt_remove_value_by_index';
 
+{ --- wrapper functions --- }
+
+{
+  @brief Equivalent to FWBT_HEADER_SIZE macro from fwbt.h
+}
+function FWBT_HEADER_SIZE: Integer;
+
+{
+  @brief Parse the given data Byte-Array into a FWBT record
+  @return FWBT_OK if successfull.
+}
+function FwbtParseBytes(var out_fwbt: TFWBT; constref data: TByteDynArray): TFWBTError;
+
+{
+  @brief Serialize the given FWBT into a Byte-Array
+  @return FWBT_OK if successfull.
+}
+function FwbtSerialize(constref fwbt: TFWBT; var outbytes: TByteDynArray): TFWBTError;
+
 implementation
+
+function FWBT_HEADER_SIZE: Integer;
+begin
+  FWBT_HEADER_SIZE := sizeof(TFWBTHeader);
+end;
+
+function FwbtParseBytes(var out_fwbt: TFWBT; constref data: TByteDynArray): TFWBTError;
+begin
+  FwbtParseBytes := __extern_fwbt_parse_bytes(@data[0], Length(data), @out_fwbt);
+end;
+
+function FwbtSerialize(constref fwbt: TFWBT; var outbytes: TByteDynArray): TFWBTError;
+var
+  c_outbytes: PUInt8;
+  out_size: SizeUInt;
+begin
+  FwbtSerialize := __extern_fwbt_serialize(fwbt, @c_outbytes, @out_size);
+
+  if FwbtSerialize <> FWBT_OK then
+    exit;
+
+  SetLength(outbytes, out_size);
+  Move(c_outbytes^, outbytes[0], out_size);
+end;
+
 end.
