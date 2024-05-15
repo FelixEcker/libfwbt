@@ -1,5 +1,0 @@
-*.o
-*.ppu
-build/
-*.res
-test
