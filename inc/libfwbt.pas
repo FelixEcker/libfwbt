@@ -1,8 +1,8 @@
 unit libfwbt;
 
-{ 
+{
   libfwbt -- fixed width binary table library
-  
+
   This unit is a manual translation of the main header file of libfwbt with some
   wrapper functions to make working with libfwbt using fpc a bit more pleasant.
   All functions which are directly linked to the libfwbt functions are prefixed
@@ -32,9 +32,9 @@ const
 
   { --- from fwbt.h --- }
   FWBT_SIGNATURE: array[0..3] of CChar = (
-                                      CChar('F'), 
-                                      CChar('W'), 
-                                      CChar('B'), 
+                                      CChar('F'),
+                                      CChar('W'),
+                                      CChar('B'),
                                       CChar('T')
                                   );
   FWBT_VERSION = 1; { Format Version }
@@ -91,7 +91,7 @@ type
   FWBT_BODY_NO_MEMCPY whilst compiling. This will cause the parsing code
   to just point into the raw data received by the function.
   When defined MAKE SURE NOT TO FREE THE ORIGINAL DATA
- 
+
   @param data Pointer to the data
   @param data_size Size of the data
   @param out_fwbt Destination pointer for the parsed FWBT
@@ -163,6 +163,35 @@ function FwbtParseBytes(var out_fwbt: TFWBT; constref data: TByteDynArray): TFWB
 }
 function FwbtSerialize(constref fwbt: TFWBT; var outbytes: TByteDynArray): TFWBTError;
 
+{
+  @brief Finds the value corresponding to the given key
+  @return Index of key/value pair. (2^32)-1 (UINT32_MAX) if not found
+}
+function FwbtFindValue(constref fwbt: TFWBT; const key: TByteDynArray): UInt32;
+
+{
+  @brief Sets the value for the given key
+  @note Each key and value should be an unique array, as libfwbt only ever
+        stores the raw pointers to the keys and values it receives.
+  @param replace_existing Should an existing value be replaced?
+  @return FWBT_OK if successfull.
+}
+function FwbtSetValue(var fwbt: TFWBT; constref key: TByteDynArray;
+                      constref value: TByteDynArray;
+                      const replace_existing: Boolean): TFWBTError;
+
+{
+  @brief Removes the key/value pair using the given key
+  @return FWBT_OK if successfull.
+}
+function FwbtRemoveValue(var fwbt: TFWBT; constref key: TByteDynArray): TFWBTError;
+
+{
+  @brief Removes the key/value pair at the given index
+  @return FWBT_OK if successfull.
+}
+function FwbtRemoveValueByIndex(var fwbt: TFWBT; const index: UInt32): TFWBTError;
+
 implementation
 
 function FWBT_HEADER_SIZE: Integer;
@@ -187,6 +216,28 @@ begin
 
   SetLength(outbytes, out_size);
   Move(c_outbytes^, outbytes[0], out_size);
+end;
+
+function FwbtFindValue(constref fwbt: TFWBT; const key: TByteDynArray): UInt32;
+begin
+  FwbtFindValue := __extern_fwbt_find_value(fwbt, @key[0]);
+end;
+
+function FwbtSetValue(var fwbt: TFWBT; constref key: TByteDynArray;
+                      constref value: TByteDynArray;
+                      const replace_existing: Boolean): TFWBTError;
+begin
+  FwbtSetValue := __extern_fwbt_set_value(@fwbt, @key[0], @value[0], replace_existing);
+end;
+
+function FwbtRemoveValue(var fwbt: TFWBT; constref key: TByteDynArray): TFWBTError;
+begin
+  FwbtRemoveValue := __extern_fwbt_remove_value(@fwbt, @key[0]);
+end;
+
+function FwbtRemoveValueByIndex(var fwbt: TFWBT; const index: UInt32): TFWBTError;
+begin
+  FwbtRemoveValueByIndex := __extern_fwbt_remove_value_by_index(@fwbt, index);
 end;
 
 end.
