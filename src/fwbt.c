@@ -101,8 +101,17 @@ fwbt_error_t _parse_body(const uint8_t *data, size_t data_size,
   return FWBT_OK;
 }
 
-fwbt_error_t fwbt_parse_bytes(const uint8_t *data, size_t data_size,
-                              fwbt_t *out_fwbt) {
+#define __FWBT_PARSE_SANITY_CHECK(d, s, o) \
+  if (d == NULL || o == NULL) return FWBT_NULLPTR; \
+  if (s < FWBT_HEADER_SIZE) return FWBT_TOO_SHORT; \
+  if (d[FWBT_DATA_VERSION_INDEX] != FWBT_VERSION) \
+    return FWBT_UNSUPPORTED_VERSION; \
+  const char __signature[] = FWBT_SIGNATURE; \
+  if (strncmp((const char *)d, __signature, sizeof(__signature)) != 0) \
+    return FWBT_NO_SIGNATURE;
+
+fwbt_error_t _fwbt_parse_sanity_check(const uint8_t *data, size_t data_size,
+                                      fwbt_t *out_fwbt) {
   if (data == NULL || out_fwbt == NULL) {
     return FWBT_NULLPTR;
   }
@@ -118,6 +127,16 @@ fwbt_error_t fwbt_parse_bytes(const uint8_t *data, size_t data_size,
   const char signature[] = FWBT_SIGNATURE;
   if (strncmp((const char *)data, signature, sizeof(signature)) != 0) {
     return FWBT_NO_SIGNATURE;
+  }
+
+  return FWBT_OK;
+}
+
+fwbt_error_t fwbt_parse_bytes(const uint8_t *data, size_t data_size,
+                              fwbt_t *out_fwbt) {
+  fwbt_error_t err = _fwbt_parse_sanity_check(data, data_size, out_fwbt);
+  if (err != FWBT_OK) {
+    return err;
   }
 
   memcpy(out_fwbt, data, FWBT_HEADER_SIZE);
@@ -141,6 +160,14 @@ fwbt_error_t fwbt_parse_bytes(const uint8_t *data, size_t data_size,
 
   return _parse_body(data + FWBT_HEADER_SIZE, data_size - FWBT_HEADER_SIZE,
                      out_fwbt);
+}
+
+fwbt_error_t fwbt_parse_bytes_ncpy(const uint8_t *data, size_t data_size,
+                                   fwbt_t *out_fwbt) {
+  fwbt_error_t err = _fwbt_parse_sanity_check(data, data_size, out_fwbt);
+  if (err != FWBT_OK) {
+    return err;
+  }
 }
 
 fwbt_error_t fwbt_serialize(fwbt_t fwbt, uint8_t **out_bytes,
