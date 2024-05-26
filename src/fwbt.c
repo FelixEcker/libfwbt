@@ -60,8 +60,8 @@ uint32_t _reverse_bytes(uint32_t bytes) {
 }
 #endif
 
-fwbt_error_t _parse_body(const uint8_t *data, size_t data_size,
-                         fwbt_t *out_fwbt) {
+fwbt_error_t _parse_body(uint8_t *data, size_t data_size,
+                         fwbt_t *out_fwbt, bool ncpy) {
   if (data == NULL || out_fwbt == NULL) {
     return FWBT_NULLPTR;
   }
@@ -85,15 +85,15 @@ fwbt_error_t _parse_body(const uint8_t *data, size_t data_size,
   const size_t inc = key_width + value_width;
   size_t wix = 0;
   for (size_t rix = 0; rix < data_size; rix += inc) {
-#ifndef FWBT_BODY_NO_MEMCPY
-    out_fwbt->body.keys[wix] = xmalloc(key_width);
-    out_fwbt->body.values[wix] = xmalloc(value_width);
-    memcpy(out_fwbt->body.keys[wix], data + rix, key_width);
-    memcpy(out_fwbt->body.values[wix], data + rix + key_width, value_width);
-#else
-    out_fwbt->body.keys[wix] = data + rix;
-    out_fwbt->body.values[wix] = data + key_width;
-#endif
+    if (ncpy) {
+      out_fwbt->body.keys[wix] = data + rix;
+      out_fwbt->body.values[wix] = data + key_width;
+    } else {
+      out_fwbt->body.keys[wix] = xmalloc(key_width);
+      out_fwbt->body.values[wix] = xmalloc(value_width);
+      memcpy(out_fwbt->body.keys[wix], data + rix, key_width);
+      memcpy(out_fwbt->body.values[wix], data + rix + key_width, value_width);
+    }
 
     wix++;
   }
@@ -101,16 +101,11 @@ fwbt_error_t _parse_body(const uint8_t *data, size_t data_size,
   return FWBT_OK;
 }
 
-#define __FWBT_PARSE_SANITY_CHECK(d, s, o) \
-  if (d == NULL || o == NULL) return FWBT_NULLPTR; \
-  if (s < FWBT_HEADER_SIZE) return FWBT_TOO_SHORT; \
-  if (d[FWBT_DATA_VERSION_INDEX] != FWBT_VERSION) \
-    return FWBT_UNSUPPORTED_VERSION; \
-  const char __signature[] = FWBT_SIGNATURE; \
-  if (strncmp((const char *)d, __signature, sizeof(__signature)) != 0) \
-    return FWBT_NO_SIGNATURE;
-
-fwbt_error_t _fwbt_parse_sanity_check(const uint8_t *data, size_t data_size,
+/**
+ * @brief Checks if the parameters for the parsing function are all in order and
+ * the data is a valid FWBT etc.
+ */
+fwbt_error_t _fwbt_parse_sanity_check(uint8_t *data, size_t data_size,
                                       fwbt_t *out_fwbt) {
   if (data == NULL || out_fwbt == NULL) {
     return FWBT_NULLPTR;
@@ -132,14 +127,18 @@ fwbt_error_t _fwbt_parse_sanity_check(const uint8_t *data, size_t data_size,
   return FWBT_OK;
 }
 
-fwbt_error_t fwbt_parse_bytes(const uint8_t *data, size_t data_size,
-                              fwbt_t *out_fwbt) {
-  fwbt_error_t err = _fwbt_parse_sanity_check(data, data_size, out_fwbt);
-  if (err != FWBT_OK) {
-    return err;
-  }
-
-  memcpy(out_fwbt, data, FWBT_HEADER_SIZE);
+/**
+ * @brief internal function to parse a FWBT, calls _parse_body to parse the body
+ * data an passes along the ncpy parameter.
+ *
+ * @param ncpy If true, memcpys are avoided wherever possible/sensible.
+ */
+fwbt_error_t _parse_bytes_internal(uint8_t *data, size_t data_size,
+                                   fwbt_t *out_fwbt, bool ncpy) {
+  /* This is the only memcpy not affected by ncpy, the 17 bytes (or so) don't
+   * have any realistic impact on the performance
+   */
+  memcpy(&out_fwbt->header, data, FWBT_HEADER_SIZE);
 
 #ifdef __USE_LE
   /* reverse values for little endian systems */
@@ -159,15 +158,27 @@ fwbt_error_t fwbt_parse_bytes(const uint8_t *data, size_t data_size,
   }
 
   return _parse_body(data + FWBT_HEADER_SIZE, data_size - FWBT_HEADER_SIZE,
-                     out_fwbt);
+                     out_fwbt, ncpy);
 }
 
-fwbt_error_t fwbt_parse_bytes_ncpy(const uint8_t *data, size_t data_size,
+fwbt_error_t fwbt_parse_bytes(uint8_t *data, size_t data_size,
+                              fwbt_t *out_fwbt) {
+  fwbt_error_t err = _fwbt_parse_sanity_check(data, data_size, out_fwbt);
+  if (err != FWBT_OK) {
+    return err;
+  }
+
+  return _parse_bytes_internal(data, data_size, out_fwbt, false);
+}
+
+fwbt_error_t fwbt_parse_bytes_ncpy(uint8_t *data, size_t data_size,
                                    fwbt_t *out_fwbt) {
   fwbt_error_t err = _fwbt_parse_sanity_check(data, data_size, out_fwbt);
   if (err != FWBT_OK) {
     return err;
   }
+
+  return _parse_bytes_internal(data, data_size, out_fwbt, true);
 }
 
 fwbt_error_t fwbt_serialize(fwbt_t fwbt, uint8_t **out_bytes,

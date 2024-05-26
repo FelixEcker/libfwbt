@@ -119,7 +119,7 @@ typedef enum fwbt_error {
  * @param out_fwbt Destination pointer for the parsed FWBT
  * @return FWBT_OK if parsing succeeds, any other possible error if not
  */
-fwbt_error_t fwbt_parse_bytes(const uint8_t *data, size_t data_size,
+fwbt_error_t fwbt_parse_bytes(uint8_t *data, size_t data_size,
                               fwbt_t *out_fwbt);
 
 /**
@@ -132,7 +132,7 @@ fwbt_error_t fwbt_parse_bytes(const uint8_t *data, size_t data_size,
  * @param out_fwbt Destination pointer for the prased FWBT
  * @return FWBT_OK if parsing succeeds, any other possible error if not
  */
-fwbt_error_t fwbt_parse_bytes_ncpy(const uint8_t *data, size_t data_size,
+fwbt_error_t fwbt_parse_bytes_ncpy(uint8_t *data, size_t data_size,
                                    fwbt_t *out_fwbt);
 
 /**
