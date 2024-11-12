@@ -27,7 +27,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#ifdef __cpluplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -172,7 +172,7 @@ fwbt_error_t fwbt_remove_value(fwbt_t *fwbt, uint8_t *key);
  */
 fwbt_error_t fwbt_remove_value_by_index(fwbt_t *fwbt, uint32_t index);
 
-#ifdef __cpluplus
+#ifdef __cplusplus
 }
 #endif
 #endif
